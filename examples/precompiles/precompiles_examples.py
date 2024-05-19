@@ -1,4 +1,4 @@
-from coti_sdk.crypto_utils import *
+from coti.crypto_utils import *
 from dotenv import load_dotenv
 
 from examples.basics.utils import *

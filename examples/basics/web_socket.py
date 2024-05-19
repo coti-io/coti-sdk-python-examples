@@ -27,8 +27,7 @@ async def get_event():
                 message = await asyncio.wait_for(ws.recv(), timeout=60)
                 json_message = json.loads(message)
                 result = json_message['params']['result']
-                if int(result['gasUsed'],16) > 0:
-                    print(f"result: {result}")
+                print(result)
             except asyncio.exceptions.TimeoutError:
                 print("TimeoutError")
                 pass

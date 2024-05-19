@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 
 from confidential_erc20_methods import *
 
+
 # script deploys (or uses already deployed) confidential erc20 contract
 # that is possible to transfer funds in a clear or encrypted manner
 # pending enhancements: approval, allowance, mint in encrypted manner and gas estimations

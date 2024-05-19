@@ -67,8 +67,8 @@ def validate_minimum_balance(web3):
     if balance == 0:
         if is_devnet():
             raise Exception(
-                "Not enough balance!, head to discord faucet and getsome..." \
-                "https://discord.com/channels/386571547508473876/1235539223595978752 , ask the BOT:" \
+                "Not enough balance!, head to discord faucet and get some..." \
+                "https://faucet.coti.io, ask the BOT:" \
                 "devnet " + str(web3.eth.default_account.address))
         raise Exception("Not enough balance!")
 
@@ -124,7 +124,7 @@ def deploy_and_save(contract_name, contract_file_name, kwargs, tx_params, sols, 
 
 
 def get_working_directory():
-    repo_name = 'coti-sdk-python'
+    repo_name = 'coti-sdk-python-examples'
     working_dir = os.getcwd()
     working_dir = working_dir[:working_dir.find(repo_name) + len(repo_name)]
     return working_dir

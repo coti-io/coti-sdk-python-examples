@@ -1,4 +1,4 @@
-from coti_sdk.crypto_utils import build_input_text
+from coti.crypto_utils import build_input_text
 
 from examples.basics.utils import *
 
