@@ -142,6 +142,10 @@ def get_contracts_working_directory():
         raise Exception("contracts examples should be executed in root of " + project_name)
 
 
+def make_sure_tx_didnt_fail(tx_receipt):
+    assert tx_receipt.status == 1
+
+
 def compile_contract(contract_name, contract_file_name, web3, sols, relative_to_mpc_core):
     if SOLC_VERSION not in get_installed_solc_versions():
         install_solc(SOLC_VERSION)

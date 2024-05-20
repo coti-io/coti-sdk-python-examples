@@ -76,6 +76,7 @@ def test_approve(account_hex_encryption_key, deployed_contract, eoa, tx_params):
     kwargs = {'_spender': eoa.address, '_itCT': 50, '_itSignature': bytes(65)}
     tx_receipt = approve(deployed_contract, kwargs, 50, account_hex_encryption_key, eoa, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, eoa.address).call({'from': eoa.address})
     allowance = decrypt_value(allowance_cipher_text, account_hex_encryption_key)
     assert allowance >= 50
@@ -87,6 +88,7 @@ def test_transfer_from_clear(account_balance_before, account_hex_encryption_key,
     kwargs = {'_from': eoa.address, '_to': alice_address.address, '_value': plaintext_integer}
     tx_receipt = transfer_from_clear(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
     assert account_balance_before - plaintext_integer == account_balance_after
     return account_balance_after
@@ -100,6 +102,7 @@ def test_transfer_from(account_balance_before, account_hex_encryption_key, alice
     tx_receipt = transfer_from(deployed_contract, kwargs, bob_address, bob_hex_encryption_key, 5,
                                tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
     assert account_balance_before - plaintext_integer == account_balance_after
     return account_balance_after
@@ -111,6 +114,7 @@ def test_approve_clear(account_hex_encryption_key, deployed_contract, eoa, plain
     kwargs = {'_spender': bob_address.address, '_value': allowance_amount}
     tx_receipt = approveClear(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, bob_address.address).call(
         {'from': eoa.address})
     allowance = decrypt_value(allowance_cipher_text, account_hex_encryption_key)
@@ -141,6 +145,7 @@ def test_transfer_input_text(account_balance_before, account_hex_encryption_key,
     kwargs = {'_to': alice_address.address, '_itCT': 5, '_itSignature': bytes(65), 'revealRes': False}
     tx_receipt = transfer_encrypted(deployed_contract, kwargs, eoa, account_hex_encryption_key, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
     assert account_balance_before - plaintext_integer == account_balance_after
     return account_balance_after
@@ -152,6 +157,7 @@ def test_transfer_clear(account_balance_before, account_hex_encryption_key, alic
     kwargs = {'_to': alice_address.address, '_value': plaintext_integer}
     tx_receipt = transfer_clear(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
     assert account_balance_before - plaintext_integer == account_balance_after
     return account_balance_after
@@ -163,6 +169,7 @@ def test_transfer(account_balance_before, account_hex_encryption_key, alice_addr
     kwargs = {'_to': alice_address.address, '_value': plaintext_integer, 'revealRes': True}
     tx_receipt = transfer(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
     assert account_balance_before - plaintext_integer == account_balance_after
     return account_balance_after

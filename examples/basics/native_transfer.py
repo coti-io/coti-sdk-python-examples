@@ -18,6 +18,7 @@ def main():
     tx_receipt = transfer_native(web3, alice_address.address, eoa_private_key, amount_to_transfer_ether,
                                  num_of_gas_units)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
 
 
 if __name__ == "__main__":

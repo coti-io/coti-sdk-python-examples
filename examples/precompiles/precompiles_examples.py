@@ -86,6 +86,7 @@ def test(function_name, kwargs, expected_result1, get_result_function_name, tx_p
     func = contract.functions[function_name](**kwargs)
     tx_receipt = exec_func_via_transaction(func, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     result1, result2, result3, result4, result5, result6, result7, result8 \
         = get_result(contract, get_result_function_name)
     if function_name == "transferTest" or function_name == "transferScalarTest":

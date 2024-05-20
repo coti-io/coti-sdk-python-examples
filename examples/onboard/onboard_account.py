@@ -54,6 +54,7 @@ def onboard_for_aes_key(deployed_contract, eoa_private_key, tx_params):
     kwargs = {"signedEK": public_key, "signature": signature}
     tx_receipt = onboard_user(deployed_contract, kwargs, tx_params)
     print("tx receipt: ", tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     encrypted_user_aes_from_network = tx_receipt.logs[0].data[64:]
     # only the private key could decrypt the account secret key
     decrypted_aes_key = decrypt_rsa(private_key, encrypted_user_aes_from_network)

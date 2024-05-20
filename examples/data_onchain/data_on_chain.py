@@ -131,6 +131,7 @@ def basic_add_computation(deployed_contract, tx_params, eoa, account_hex_encrypt
     kwargs = {}
     tx_receipt = add_one_encrypted_value_with_another_on_chain(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     user_encrypted_arithmetic_result = get_user_arithmetic_result(deployed_contract, eoa)
     user_decrypted_arithmetic_result = decrypt_value(user_encrypted_arithmetic_result, account_hex_encryption_key)
     assert sum_result == user_decrypted_arithmetic_result
@@ -146,11 +147,13 @@ def basic_encrypted_encrypt_decrypt(account_hex_encryption_key, deployed_contrac
         save_input_text_network_encrypted_in_contract(deployed_contract, account_hex_encryption_key, eoa,
                                                       hex_account_private_key, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     validate_block_has_tx_input_encrypted_value(tx_params, tx_receipt, user_some_value_clear,
                                                 account_hex_encryption_key, input_text)
     kwargs = {}
     tx_receipt = save_network_encrypted_to_user_encrypted_input_in_contract(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     user_cipher_text_from_block = tx_receipt.logs[0].data
     user_cipher_text_from_block_int_value = int(user_cipher_text_from_block.hex(), 16)
     user_cipher_text_from_contract = get_user_value_encrypted_input(deployed_contract, eoa)
@@ -228,6 +231,7 @@ def save_clear_value_network_encrypted_in_contract(deployed_contract, tx_params)
     kwargs = {'_value': user_some_value_clear}
     tx_receipt = setSomeEncryptedValue(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     return user_some_value_clear, tx_receipt
 
 
@@ -235,6 +239,7 @@ def save_network_encrypted_in_contract(deployed_contract, tx_params, value):
     kwargs = {'networkEncrypted': value}
     tx_receipt = setNetworkSomeEncryptedValue(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
 
 
 def validate_block_has_tx_input_clear_value(tx_params, tx_receipt, user_some_value_clear):
