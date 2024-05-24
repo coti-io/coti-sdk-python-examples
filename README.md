@@ -90,15 +90,226 @@ Inspect the `.env` file for more details.
 
 The python examples utilizes primitive deployment management that mostly checks if there is a json file under the `/compiled_contracts` directory and doesn't deploy a new one in case one already exists, otherwise it deploys.
 
-### Getting Started
+## Pre-requisites
 
-1. Generate EOA: Run the `native_transfer.py` script, it will transfer a small amount of COTI2 to some random address - demonstrating standard native transfer. It will create a new EOA (you will see your public address in the script output), and the account private key will be recorded in your `.env` file. It will fail on first run since the account doesn't have any funds. Refer to the Faucet section above
+1. [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+2. [Python >= 3.9, <= 3.10](https://www.python.org/downloads/)
+3. [pip](https://pip.pypa.io/en/stable/installation/)
 
-2. Generate Encryption Key: Run the `onboard_account.py` script, it will ask the network for the AES encryption key specific for this account and it will log it in the `.env` file (mandatory for every action that performs COTI v2 onchain computation).
+## Getting Started
 
-3. Execute: Now you can run any other example, such as `precompiles_examples.py` (see above for complete list).
+### Native Transfer
 
-In order to follow the transactions sent to the node, use the `web_socket.py` to be notified and see on-chain details.
+The following process will help you deploy the [**`native_transfer.py`**](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/basics/native\_transfer.py) example from the [**COTI Python SDK Examples**](https://github.com/coti-io/coti-sdk-python-examples) project. This script will transfer native funds from your wallet account to a random wallet. It will also:
+
+* Create a EOA (Externally Owned Account)
+* Validate minimum balance
+
+> [!TIP]
+> Ensure your environment meets all the pre-requisites. Visit the [pre-requisites section of the readme](https://github.com/coti-io/coti-sdk-python/tree/main?tab=readme-ov-file#python-sdk-coti-sdk-python---usage). Alternatively, use an editor like [PyCharm](https://www.jetbrains.com/pycharm/download/) to take care of the pre-requisites for you.
+
+1.  Clone the Python examples repo along with its submodules into your desired location
+
+    ```bash
+    git clone --recurse-submodules git@github.com:coti-io/coti-sdk-python-examples.git
+    ```
+
+
+2.  Change directory to the newly create one
+
+    ```bash
+    cd coti-sdk-python-examples
+    ```
+
+
+3.  Install the project's requirements
+
+    ```bash
+    python3 -m pip install -r requirements.txt
+    ```
+
+
+4.  Set the python path as following
+
+    ```bash
+    export PYTHONPATH=$PWD
+    ```
+
+
+5.  Run the `native_transfer.py` script
+
+    ```bash
+    python3 examples/basics/native_transfer.py
+    ```
+
+    Running the script will automatically create an account and a key/value pair with name: `ACCOUNT_PRIVATE_KEY` (visible in the `.env` file). The script will output something like this:
+
+
+
+    ```bash
+    So you dont have an account yet, dont worry... lets create one right now!
+    Creation done!
+    provider:  https://devnet.coti.io
+    chain-id:  13068200
+    latest block:  0xc9ec7259bad015c46a0bef9b0988cac70a62e2abaed7459b5265e425bc5cecb8
+    account address: 0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4
+    account balance:  0 wei ( 0  ether)
+    account nonce:  0
+    Traceback (most recent call last):
+      File "/Users/user/projects/coti-sdk-python/examples/basics/native_transfer.py", line 24, in <module>
+        main()
+      File "/Users/user/projects/coti-sdk-python/examples/basics/native_transfer.py", line 12, in main
+        validate_minimum_balance(web3)  # validate minimum balance
+      File "/Users/user/projects/coti-sdk-python/examples/basics/utils.py", line 69, in validate_minimum_balance
+        raise Exception(
+    Exception: Not enough balance!, head to discord faucet and getsome...https://discord.com/channels/386571547508473876/1235539223595978752 , ask the BOT:devnet 0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4
+
+    Process finished with exit code 1
+
+    ```
+
+    \
+    It is normal to receive the exception `Not enough balance!` on the first run. This will be resolved once the account is funded.\
+
+6. Head to the faucet at [**https://faucet.coti.io**](https://faucet.coti.io) to get devnet funds. \
+   Send the following message to the BOT using your newly created `account address`:\
+   \
+   `devnet <account address>`\
+   \
+   The bot will reply with the message:\
+   \
+   `<username> faucet transferred 5 COTIv2 (devnet)` \
+   &#x20;
+7.  Run the `native_transfer.py` script once more
+
+    ```bash
+    python3 examples/basics/native_transfer.py
+    ```
+
+    \
+    The script will output as following:
+
+    ```bash
+    provider:  https://devnet.coti.io
+    chain-id:  13068200
+    latest block:  0x4f5b68d9ef7debc0f86b4fc4c50a81020c8de315d65b4ce12b4372ebedef4f95
+    account address: 0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4
+    account balance:  10000000000000000000 wei ( 10  ether)
+    account nonce:  0
+    AttributeDict({'blockHash': HexBytes('0x3e0534655361da10c9ee6454d622609c900e3f552435acc9cc963e370ca1d36b'), 'blockNumber': 3395902, 'contractAddress': None, 'cumulativeGasUsed': 21000, 'effectiveGasPrice': 1000000000, 'from': '0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4', 'gasUsed': 21000, 'logs': [], 'logsBloom': HexBytes('0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'), 'status': 1, 'to': '0x4A68774D7679e63Ea42599Fe076a899036B3642B', 'transactionHash': HexBytes('0x99ad02f33a146945ac3a671857ab5134965b1f3e78fd53a97710bcdcb99dfee7'), 'transactionIndex': 0, 'type': 0})
+    ```
+
+    \
+    Now that your account is created and funded, you can now onboard the account to get your new network key.
+
+## On-board Account
+
+The following process will help you deploy the [**`onboard_account.py`**](https://github.com/coti-io/coti-sdk-python/blob/main/examples/onboard/onboard\_account.py) example from the [**COTI Python SDK Examples**](https://github.com/coti-io/coti-sdk-python-examples) repo. This script onboards an EOA into the network. It will also:
+
+* Trigger the network to create a unique AES key for the user
+* Encrypt the unique user-specific AES key using the Public key so that its value can be viewed only by the EOA owner.
+
+This is a mandatory script for any operation executed in any contract requiring encrypt/decrypt operations which are part of the new EVM precompiles actions.
+
+1.  Run the `onboard_account.py` script
+
+    <pre class="language-bash"><code class="lang-bash"><strong>python3 examples/onboard/onboard_account.py
+    </strong></code></pre>
+
+    \
+    Running the script will automatically create an account and an `ACCOUNT_ENCRYPTION_KEY` (visible in the `.env` file as well as the output). The script output will look something like this:\
+
+
+    ```bash
+    provider:  https://devnet.coti.io
+    chain-id:  13068200
+    latest block:  0x31f5e889a74777e514abcf83ece21839d96c465419b66b6b977f65d052062c2a
+    account address: 0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4
+    account balance:  9999936985000000000 wei ( 9.999936985  ether)
+    account nonce:  3
+    tx receipt:  AttributeDict({'blockHash': HexBytes('0x94dac5f2cf57639fe934457cb33354399567cfad233c2fb3d6a271ecd47830a3'), 'blockNumber': 3399673, 'contractAddress': None, 'cumulativeGasUsed': 225968, 'effectiveGasPrice': 30000000000, 'from': '0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4', 'gasUsed': 225968, 'logs': [AttributeDict({'address': '0xbFC922C10B03EA5dbC90b98dfc8fb334849ccB78', 'topics': [HexBytes('0xb67504ecfeef0230a06f661ea388c2947b4125a35e918ebff5889e3553c29c04'), HexBytes('0x0000000000000000000000000287a7a5bd5f4802d4a6048730a11b2713a16bd4')], 'data': HexBytes('0x00000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000100702c1a6221b95f4730a6ff7e7e96d4362d75558386340a381714a64ac40cb4100e5e27e5f9606fbc5e89b2064062d15d4a7ad671428ac128eb76eaed7534f36e0829fb4e4cf090db7ae6e1ba3728e6870fe29617c80ec1d0fcfd5c5b39eec6b7252e2d0a1e8f89cf786d9abd288c74e2cad8006f8c8065e6f3ff73bf164d2d9a0e708f26ff938890ea7191655ef6f0a5ffe9acaddaf9f614b2ecc9faf86cfc041b6704cc4865429b069c0fbc02b83ecc5c45f54501542de2c08b85d7c2a88370503c5d7f04ca6e7b0fffeb89dc7b3c8e5834943e93899bab6bc0ac9ce58e8d59247ab8dd7c096c1fe5e65f48a5c3fb6e85e2a6d43f829ebc5da0c75740df33fd'), 'blockNumber': 3399673, 'transactionHash': HexBytes('0x69af701a8f65ebf6c007e512ce6bc5e801884c3ae49ad744f47069053e2ed81e'), 'transactionIndex': 0, 'blockHash': HexBytes('0x94dac5f2cf57639fe934457cb33354399567cfad233c2fb3d6a271ecd47830a3'), 'logIndex': 0, 'removed': False})], 'logsBloom': HexBytes('0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000000000000000000000400000000000000000000001000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000100000000000000000008000000000000000000000000000000000440000000000000000000000000000000000000000000000000000000000000000000000000000000000000020000000000000000000000000000000000000000000000000000040000000000000000000000000000000'), 'status': 1, 'to': '0xbFC922C10B03EA5dbC90b98dfc8fb334849ccB78', 'transactionHash': HexBytes('0x69af701a8f65ebf6c007e512ce6bc5e801884c3ae49ad744f47069053e2ed81e'), 'transactionIndex': 0, 'type': 0})
+    (True, 'ACCOUNT_ENCRYPTION_KEY', 'fd3d781ddcbd1e1cedd2d75460f30636')
+    ```
+
+    > [!CAUTION]
+    > This encryption key is **sensitive.** Ensure it is not uploaded to public places and keep it safe. This key is produced per EOA wallet, meaning a unique wallet/EOA combination will have a unique encryption key.
+
+
+    \
+    The `.env` file will also have other useful information, such as the node address, websocket address, and the contract directories.\
+    \
+    Now that the account is onboarded, let's deploy a contract on-chain.
+
+## Deploy Data On-Chain
+
+The following process will help you deploy the [**`data_on_chain.py`**](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py) example from the [**COTI Python SDK Examples**](https://github.com/coti-io/coti-sdk-python-examples) repo. As its name suggests, the contract will compile and deploy the corresponding [**`DataOnChain.sol`**](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/examples/DataOnChain.sol) contract, located in the `confidentiality-contracts` directory.
+
+This contract can be used in order to browse and get a feel of the COTI network. The contract allows for the secure handling of encrypted data, enabling storage, transformation, and arithmetic operations on encrypted values using the [**`MpcCore`**](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/lib/MpcCore.sol) library. It supports operations where values are encrypted using both network and user keys, ensuring data privacy and security on-chain.
+
+1.  Navigate to the `examples` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
+
+    ```bash
+    cd confidentiality-contracts/contracts/examples
+    ```
+
+
+2.  Run the `data_on_chain.py` script
+
+    ```bash
+    python3 ../../examples/data_onchain/data_on_chain.py
+    ```
+
+    \
+    Running the script will deploy the contract and output the address where the contract was deployed. The script output will look something like this (with some omitted block hashes at the end of ther response):\
+
+
+    ```bash
+    provider:  https://devnet.coti.io/rpc
+    chain-id:  13068200
+    latest block:  0x75a2f9d10db48fdc53f14d9ce565420e680b06231cd34e3c194f14fbd0c5f999
+    account address: 0xB101fbd6938AaE2e472E247e36555528d7ff4A89
+    account balance:  4993201875000000000 wei ( 4.993201875  ether)
+    account nonce:  2
+    Compiling DataOnChain...
+    Deploying DataOnChain...
+    Contract deployed at address: 0x91Af1CD8Bbc3b7dCcd5fF19f522cd9A49067F928
+    contract address:  0x91Af1CD8Bbc3b7dCcd5fF19f522cd9A49067F928
+    ```
+
+    \
+    The deployment will include the transaction data as well as the address the contract was deployed to:
+
+    ```bash
+    Contract deployed at address: 0x91Af1CD8Bbc3b7dCcd5fF19f522cd9A49067F928
+    ```
+
+    \
+    You can now view the contract on devnet explorer using the following convention:\
+    `https://explorer-devnet.coti.io/address/<contract deployment address>` \
+    \
+    In our case: \
+    [**https://explorer-devnet.coti.io/contract/0x91af1cd8bbc3b7dccd5ff19f522cd9a49067f928**](https://explorer-devnet.coti.io/contract/0x91af1cd8bbc3b7dccd5ff19f522cd9a49067f928)
+
+Let's note the following facts about the contract and the script:
+
+*   When the contract was deployed, the `uint64 private clearValue` variable was assigned a value of `5` as evidenced by [lines 15-17](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/examples/DataOnChain.sol#L15-L17) of the contract:&#x20;
+
+    ```solidity
+     constructor () {
+            clearValue = 5;
+        }
+    ```
+* The function [`getSomeValue`](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/examples/DataOnChain.sol#L67-L69) of the contract will then return the value of `clearValue`
+* The function [`basic_get_value`](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py#L286-L290) of the python script is making sure the value was set as expected.
+
+Now let's take a look on at the basic flow that sends a clear value, encrypts it, and decrypts it.
+
+* The python function [`basic_clear_encrypt_decrypt`](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py#L172-L184) initiates the process, calling other functions as necessary.
+* The python function [`save_clear_value_network_encrypted_in_contract`](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py#L229-L235) is used to pass a clear value from the user.&#x20;
+* Once the value is populated, the script will call the Solidity contract and use its [`setSomeEncryptedValue`](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/examples/DataOnChain.sol#L41-L43) function. This function in turn calls `setPublic64` from the [`MpcCore`](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/lib/MpcCore.sol)  library, which turns the value into GarbledText and then into CipherText using the network key. This value is now encrypted in a network block.
+* In order to validate the block had a ClearText input, the block details from the transaction are extracted using the [`validate_block_has_tx_input_encrypted_value`](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py#L253-L265) function.
+* The value is then encrypted using the function [`save_network_encrypted_to_user_encrypted_input_in_contract`](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py#L303-L305)  , this function saves the network-encrypted value to the user-encrypted input in the contract.
+* The encrypted value is retrieved from the contract using the function [`get_user_encrypted_from_contract`](https://github.com/coti-io/coti-sdk-python-examples/blob/master/examples/data\_onchain/data\_on\_chain.py#L268C5-L269) to ensure the encrypted value can be successfully retrieved with the user's AES key.
 
 ## Pending enhancements
 
