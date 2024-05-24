@@ -235,10 +235,9 @@ This is a mandatory script for any operation executed in any contract requiring 
 > This encryption key is **sensitive.** Ensure it is not uploaded to public places and keep it safe. This key is produced per EOA wallet, meaning a unique wallet/EOA combination will have a unique encryption key.
 
 
-    \
-    The `.env` file will also have other useful information, such as the node address, websocket address, and the contract directories.\
-    \
-    Now that the account is onboarded, let's deploy a contract on-chain.
+The `.env` file will also have other useful information, such as the node address, websocket address, and the contract directories.  
+
+Now that the account is onboarded, let's deploy a contract on-chain.
 
 ## Deploy Data On-Chain
 
