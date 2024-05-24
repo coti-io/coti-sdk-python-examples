@@ -169,7 +169,7 @@ The following process will help you deploy the [**`native_transfer.py`**](https:
     ```
 
     \
-    It is normal to receive the exception `Not enough balance!` on the first run. This will be resolved once the account is funded.\
+    It is normal to receive the exception `Not enough balance!` on the first run. This will be resolved once the account is funded.
 
 6. Head to the faucet at [**https://faucet.coti.io**](https://faucet.coti.io) to get devnet funds. \
    Send the following message to the BOT using your newly created `account address`:\
@@ -217,7 +217,7 @@ This is a mandatory script for any operation executed in any contract requiring 
     </strong></code></pre>
 
     \
-    Running the script will automatically create an account and an `ACCOUNT_ENCRYPTION_KEY` (visible in the `.env` file as well as the output). The script output will look something like this:\
+    Running the script will automatically create an account and an `ACCOUNT_ENCRYPTION_KEY` (visible in the `.env` file as well as the output). The script output will look something like this:
 
 
     ```bash
@@ -231,8 +231,8 @@ This is a mandatory script for any operation executed in any contract requiring 
     (True, 'ACCOUNT_ENCRYPTION_KEY', 'fd3d781ddcbd1e1cedd2d75460f30636')
     ```
 
-    > [!CAUTION]
-    > This encryption key is **sensitive.** Ensure it is not uploaded to public places and keep it safe. This key is produced per EOA wallet, meaning a unique wallet/EOA combination will have a unique encryption key.
+> [!CAUTION]
+> This encryption key is **sensitive.** Ensure it is not uploaded to public places and keep it safe. This key is produced per EOA wallet, meaning a unique wallet/EOA combination will have a unique encryption key.
 
 
     \
@@ -315,4 +315,4 @@ Now let's take a look on at the basic flow that sends a clear value, encrypts it
 
 * Extending examples such as confidential ERC20 minting, confidential NFT (deployment and actions) and more.
 
-#### To report issues, please create a [github issue](https://github.com/coti-io/coti-sdk-python/issues)
+#### To report issues, please create a [github issue](https://github.com/coti-io/coti-sdk-python-examples/issues)
