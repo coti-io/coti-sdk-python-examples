@@ -83,12 +83,12 @@ def is_contract_already_deployed(contract_name):
 
 
 def get_deployed_contract(contract_name, contract_file_name, contract_directory, tx_params, kwargs,
-                          relative_to_mpc_core):
+                          allowed_paths):
     web3 = tx_params['web3']
     already_deployed, deployed_contract_file_name = is_contract_already_deployed(contract_name)
     if not already_deployed:
         sols = get_sols(get_contracts_working_directory() + contract_directory, contract_file_name)
-        deploy_and_save(contract_name, contract_file_name, kwargs, tx_params, sols, relative_to_mpc_core)
+        deploy_and_save(contract_name, contract_file_name, kwargs, tx_params, sols, allowed_paths)
         _, deployed_contract_file_name = is_contract_already_deployed(contract_name)
     deployed_contract = load_contract_from_file(deployed_contract_file_name, web3)
     return deployed_contract, already_deployed
@@ -106,10 +106,10 @@ def get_contract(web3, abi, bytecode, contract_address):
     return deployed_contract
 
 
-def deploy_and_save(contract_name, contract_file_name, kwargs, tx_params, sols, relative_to_mpc_core):
+def deploy_and_save(contract_name, contract_file_name, kwargs, tx_params, sols, allowed_paths):
     web3 = tx_params['web3']
     print(f"Compiling {contract_name}...")
-    contract = compile_contract(contract_name, contract_file_name, web3, sols, relative_to_mpc_core)
+    contract = compile_contract(contract_name, contract_file_name, web3, sols, allowed_paths)
     print(f"Deploying {contract_name}...")
     tx_receipt = deploy_contract(contract, kwargs, tx_params)
     print("Contract deployed at address:", tx_receipt.contractAddress)
@@ -146,7 +146,7 @@ def make_sure_tx_didnt_fail(tx_receipt):
     assert tx_receipt.status == 1
 
 
-def compile_contract(contract_name, contract_file_name, web3, sols, relative_to_mpc_core):
+def compile_contract(contract_name, contract_file_name, web3, sols, allowed_paths):
     if SOLC_VERSION not in get_installed_solc_versions():
         install_solc(SOLC_VERSION)
 
@@ -162,7 +162,7 @@ def compile_contract(contract_name, contract_file_name, web3, sols, relative_to_
         },
     },
         solc_version=SOLC_VERSION,
-        allow_paths=[relative_to_mpc_core]
+        allow_paths=allowed_paths
     )
 
     bytecode = compiled_sol['contracts'][contract_file_name][contract_name]['evm']['bytecode']['object']
