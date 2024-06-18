@@ -33,11 +33,11 @@ The following contracts are available in each of the packages:
 | `DataOnChain`                  | deployment | ✅          | ❌           | ❌              | Basic encryption and decryption - Good place to start explorining network capabilties                                                         |
 | `DataOnChain`                  | execution  | ✅          | ❌           | ✅              | "                                                                                                                                             |
 | `Precompile`                   | deployment | ✅          | ✅           | ❌              | Thorough examples of the precompile functionality                                                                                             |
-| `Precompile`                   | execution  | ✅          | ✅           | ❌              | "                                                                                                                                             |-              |              
+| `Precompile`                   | execution  | ✅          | ✅           | ❌              | "                                                                                                                                             |-              |
 
 (*) no deployment needed (system contract)
 
-> [!NOTE]  
+> [!NOTE]
 > Due to the nature of ongoing development, future version might break existing functionality
 
 ### Faucet
@@ -60,7 +60,7 @@ The following example contracts are available in the Python SDK for deployment a
 | DataOnChain    | Basic encryption and decryption - Good place to start exploring network capabilities                                                          |
 | Precompile     | Thorough examples of the precompile functionality                                                                                             |
 
-> [!NOTE]  
+> [!NOTE]
 > Due to the nature of ongoing development, future versions might break existing functionality
 
 ## Getting initial funds from the COTI Faucet
@@ -71,7 +71,7 @@ The COTI faucet provides devnet/testnet funds for developers. To request devnet/
 2. Send a message to the bot in the following format:
 
 ```
-devnet <your_eoa_address> 
+devnet <your_eoa_address>
 ```
 
 For Example:
@@ -165,21 +165,25 @@ The following process will help you deploy the [**`native_transfer.py`**](https:
     Exception: Not enough balance!, head to discord faucet and getsome...https://discord.com/channels/386571547508473876/1235539223595978752 , ask the BOT:devnet 0x0287a7A5bD5f4802D4A6048730a11B2713A16bd4
 
     Process finished with exit code 1
-
     ```
 
     \
     It is normal to receive the exception `Not enough balance!` on the first run. This will be resolved once the account is funded.
 
-6. Head to the faucet at [**https://faucet.coti.io**](https://faucet.coti.io) to get devnet funds. \
-   Send the following message to the BOT using your newly created `account address`:\
-   \
-   `devnet <account address>`\
-   \
-   The bot will reply with the message:\
-   \
-   `<username> faucet transferred 5 COTIv2 (devnet)` \
-   &#x20;
+6. Head to the faucet at [**https://faucet.coti.io**](https://faucet.coti.io) to get devnet funds.
+
+   Send the following message to the BOT using your newly created `account address`:
+
+   ```
+   devnet <account address>
+   ```
+
+   The bot will reply with the message:
+
+   ```
+   <username> faucet transferred 5 COTIv2 (devnet)
+   ```
+
 7.  Run the `native_transfer.py` script once more
 
     ```bash
@@ -213,8 +217,9 @@ This is a mandatory script for any operation executed in any contract requiring 
 
 1.  Run the `onboard_account.py` script
 
-    <pre class="language-bash"><code class="lang-bash"><strong>python3 examples/onboard/onboard_account.py
-    </strong></code></pre>
+    ```bash
+    python3 examples/onboard/onboard_account.py
+    ```
 
     \
     Running the script will automatically create an account and an `ACCOUNT_ENCRYPTION_KEY` (visible in the `.env` file as well as the output). The script output will look something like this:
@@ -235,7 +240,7 @@ This is a mandatory script for any operation executed in any contract requiring 
 > This encryption key is **sensitive.** Ensure it is not uploaded to public places and keep it safe. This key is produced per EOA wallet, meaning a unique wallet/EOA combination will have a unique encryption key.
 
 
-The `.env` file will also have other useful information, such as the node address, websocket address, and the contract directories.  
+The `.env` file will also have other useful information, such as the node address, websocket address, and the contract directories.
 
 Now that the account is onboarded, let's deploy a contract on-chain.
 
@@ -245,10 +250,10 @@ The following process will help you deploy the [**`data_on_chain.py`**](https://
 
 This contract can be used in order to browse and get a feel of the COTI network. The contract allows for the secure handling of encrypted data, enabling storage, transformation, and arithmetic operations on encrypted values using the [**`MpcCore`**](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/lib/MpcCore.sol) library. It supports operations where values are encrypted using both network and user keys, ensuring data privacy and security on-chain.
 
-1.  Navigate to the `examples` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
+1.  Navigate to the `contracts` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
 
     ```bash
-    cd confidentiality-contracts/contracts/examples
+    cd confidentiality-contracts/contracts
     ```
 
 
