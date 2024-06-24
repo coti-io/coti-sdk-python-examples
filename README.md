@@ -111,7 +111,7 @@ The following process will help you deploy the [**`native_transfer.py`**](https:
 1.  Clone the Python examples repo along with its submodules into your desired location
 
     ```bash
-    git clone --recurse-submodules git@github.com:coti-io/coti-sdk-python-examples.git
+    git clone --recurse-submodules https://github.com/coti-io/coti-sdk-python-examples.git
     ```
 
 
