@@ -245,10 +245,10 @@ The following process will help you deploy the [**`data_on_chain.py`**](https://
 
 This contract can be used in order to browse and get a feel of the COTI network. The contract allows for the secure handling of encrypted data, enabling storage, transformation, and arithmetic operations on encrypted values using the [**`MpcCore`**](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/lib/MpcCore.sol) library. It supports operations where values are encrypted using both network and user keys, ensuring data privacy and security on-chain.
 
-1.  Navigate to the `examples` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
+1.  Navigate to the `contracts` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
 
     ```bash
-    cd confidentiality-contracts/contracts/examples
+    cd confidentiality-contracts/contracts
     ```
 
 
