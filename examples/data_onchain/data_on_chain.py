@@ -23,6 +23,9 @@ def main():
     b = basic_encrypted_encrypt_decrypt(account_hex_encryption_key, deployed_contract, eoa,
                                         account_hex_encryption_key, tx_params)
 
+    basic_string_encrypt_decrypt(account_hex_encryption_key, deployed_contract, eoa,
+                                 account_hex_encryption_key, tx_params)
+
     basic_add_computation(deployed_contract, tx_params, eoa, account_hex_encryption_key, a + b)
     compute_add_with_different_account(eoa_private_key, gas_limit, gas_price_gwei, web3, deployed_contract, a + b)
     make_sure_data_is_safe(eoa, web3, deployed_contract, tx_params)
@@ -133,7 +136,7 @@ def basic_add_computation(deployed_contract, tx_params, eoa, account_hex_encrypt
     print(tx_receipt)
     make_sure_tx_didnt_fail(tx_receipt)
     user_encrypted_arithmetic_result = get_user_arithmetic_result(deployed_contract, eoa)
-    user_decrypted_arithmetic_result = decrypt_value(user_encrypted_arithmetic_result, account_hex_encryption_key)
+    user_decrypted_arithmetic_result = decrypt_uint(user_encrypted_arithmetic_result, account_hex_encryption_key)
     assert sum_result == user_decrypted_arithmetic_result
 
 
@@ -159,11 +162,53 @@ def basic_encrypted_encrypt_decrypt(account_hex_encryption_key, deployed_contrac
     user_cipher_text_from_contract = get_user_value_encrypted_input(deployed_contract, eoa)
     # assert that same value back from view func is one back from event
     assert user_cipher_text_from_block_int_value == user_cipher_text_from_contract
-    user_cipher_text_decrypted = decrypt_value(user_cipher_text_from_contract, account_hex_encryption_key)
+    user_cipher_text_decrypted = decrypt_uint(user_cipher_text_from_contract, account_hex_encryption_key)
     # assert that value saved encrypted within the network is one sent
     assert user_cipher_text_decrypted == user_some_value_clear
     return user_cipher_text_decrypted
 
+
+# Sending tx with encrypted string value, that value will be saved in the field of the contract
+# flow: sending tx, asserting value was sent encrypted by data recorded in the block
+# receiving back encrypted value via func and event log, asserting that they are the same
+# decrypting value and asserting it is as the clear value
+def basic_string_encrypt_decrypt(account_hex_encryption_key, deployed_contract, eoa,
+                                 hex_account_private_key, tx_params):
+    tx_receipt, user_some_value_clear, input_text = \
+        save_string_input_text_network_encrypted_in_contract(deployed_contract, account_hex_encryption_key, eoa,
+                                                             hex_account_private_key, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
+    validate_block_has_tx_string_input_encrypted_value(tx_params, tx_receipt, user_some_value_clear,
+                                                       account_hex_encryption_key, input_text, deployed_contract)
+    kwargs = {}
+    tx_receipt = save_network_encrypted_to_user_encrypted_input_string_in_contract(deployed_contract, kwargs, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
+
+    user_encrypted_strings_from_event = \
+        deployed_contract.events.UserEncryptedStringValue().process_receipt(tx_receipt)[0][
+            'args'].ctUserSomeEncryptedStringValue
+    user_cipher_string_text_from_contract = get_user_string_value_encrypted_input(deployed_contract, eoa)
+
+    validate_block_event_against_user_encrypted_string(account_hex_encryption_key,
+                                                       user_cipher_string_text_from_contract,
+                                                       user_encrypted_strings_from_event, user_some_value_clear)
+
+
+def validate_block_event_against_user_encrypted_string(account_hex_encryption_key,
+                                                       user_cipher_string_text_from_contract,
+                                                       user_encrypted_strings_from_event, user_some_value_clear):
+
+    for char_from_event, char_from_get_method in zip(user_encrypted_strings_from_event,
+                                                     user_cipher_string_text_from_contract):
+        assert char_from_event == char_from_get_method
+
+    user_cipher_text_decrypted = decrypt_string(user_encrypted_strings_from_event, account_hex_encryption_key)
+    user_decrypt_string_from_contract = decrypt_string(user_cipher_string_text_from_contract, account_hex_encryption_key)
+
+    assert user_cipher_text_decrypted == user_some_value_clear
+    assert user_decrypt_string_from_contract == user_some_value_clear
 
 # Sending tx with clear value as tx input, that value will be saved encrypted in the contract (by network key)
 # flow: sending tx, asserting value was sent clear by data recorded in the block
@@ -178,7 +223,7 @@ def basic_clear_encrypt_decrypt(account_hex_encryption_key, deployed_contract, e
     user_encrypted_value_from_contract = get_user_encrypted_from_contract(deployed_contract, eoa)
     # assert that same value back from view func is one back from event
     assert user_encrypted_value_from_block_int_value == user_encrypted_value_from_contract
-    user_some_value_decrypted = decrypt_value(user_encrypted_value_from_contract, account_hex_encryption_key)
+    user_some_value_decrypted = decrypt_uint(user_encrypted_value_from_contract, account_hex_encryption_key)
     # assert that value saved encrypted within the network is one sent
     assert user_some_value_decrypted == user_some_value_clear
     return user_some_value_decrypted
@@ -196,7 +241,7 @@ def save_network_encrypted_to_user_encrypted_in_contract(deployed_contract, tx_p
 def basic_decryption_failure(some_other_account_hex_encryption_key, deployed_contract, eoa, tx_params):
     user_some_value_clear, _ = save_clear_value_network_encrypted_in_contract(deployed_contract, tx_params)
     user_some_value_encrypted = get_user_encrypted_from_contract(deployed_contract, eoa)
-    user_some_value_decrypted = decrypt_value(user_some_value_encrypted, some_other_account_hex_encryption_key)
+    user_some_value_decrypted = decrypt_uint(user_some_value_encrypted, some_other_account_hex_encryption_key)
     # assert that value back cant be decrypted by some other key
     assert user_some_value_decrypted != user_some_value_clear
 
@@ -205,7 +250,7 @@ def basic_decryption_failure(some_other_account_hex_encryption_key, deployed_con
 def network_decryption_failure(account_hex_encryption_key, deployed_contract, eoa, tx_params):
     user_some_value_clear, _ = save_clear_value_network_encrypted_in_contract(deployed_contract, tx_params)
     network_some_value_encrypted = get_network_value(deployed_contract, eoa)
-    network_some_value_decrypted = decrypt_value(network_some_value_encrypted, account_hex_encryption_key)
+    network_some_value_decrypted = decrypt_uint(network_some_value_encrypted, account_hex_encryption_key)
     # assert that network encrypted value cant be decrypted by user key
     assert network_some_value_decrypted != user_some_value_clear
 
@@ -223,6 +268,27 @@ def save_input_text_network_encrypted_in_contract(deployed_contract, account_hex
     kwargs['_itCT'] = input_text
     kwargs['_itSignature'] = signature
     func = deployed_contract.functions.setSomeEncryptedValueEncryptedInput(**kwargs)
+    return exec_func_via_transaction(func, tx_params), clear_input, input_text
+
+
+def save_string_input_text_network_encrypted_in_contract(deployed_contract, account_hex_encryption_key, eoa,
+                                                         hex_account_private_key, tx_params):
+    clear_input = "test string"
+    encoded_clear_input = array('B', clear_input.encode('utf-8'))
+    _itSignature = [bytes(65) for i in encoded_clear_input]
+    kwargs = {'_itInputString': encoded_clear_input, '_itSignature': _itSignature}
+    func = deployed_contract.functions.setSomeEncryptedStringEncryptedInput(**kwargs)
+    func_sig = get_function_signature(func.abi)
+    eoa_private_key = tx_params['eoa_private_key']
+    hex_account_private_key = bytes.fromhex(eoa_private_key)
+    input_text = build_string_input_text(clear_input, account_hex_encryption_key, eoa, deployed_contract, func_sig,
+                                         hex_account_private_key)
+    ciphertexts = [entry['ciphertext'] for entry in input_text]
+    signatures = [entry['signature'] for entry in input_text]
+
+    kwargs['_itInputString'] = ciphertexts
+    kwargs['_itSignature'] = signatures
+    func = deployed_contract.functions.setSomeEncryptedStringEncryptedInput(**kwargs)
     return exec_func_via_transaction(func, tx_params), clear_input, input_text
 
 
@@ -260,9 +326,27 @@ def validate_block_has_tx_input_encrypted_value(tx_params, tx_receipt, user_some
     assert input_text == int(input_text_from_tx, 16)
     # assert that value saved in block is not clear
     assert str(input_text_from_tx) != str(user_some_value_clear)
-    decrypted_input_from_tx = decrypt_value(int(input_text_from_tx, 16), account_hex_encryption_key)
+    decrypted_input_from_tx = decrypt_uint(int(input_text_from_tx, 16), account_hex_encryption_key)
     # assert that value saved in block is as clear after decryption
     assert int(decrypted_input_from_tx) == user_some_value_clear
+
+
+def validate_block_has_tx_string_input_encrypted_value(tx_params, tx_receipt, user_some_value_clear,
+                                                       account_hex_encryption_key, input_text, contract):
+    tx_from_block = tx_params['web3'].eth.get_transaction_by_block(tx_receipt['blockHash'],
+                                                                   tx_receipt['transactionIndex'])
+    print(tx_from_block)
+    tx_inputs = contract.decode_function_input(tx_from_block['input'].hex())
+    ciphertexts = [entry['ciphertext'] for entry in input_text]
+    for input_text_from_tx, input_text in zip(tx_inputs[1]['_itInputString'], ciphertexts):
+        # assert that value encrypted locally was saved in block
+        assert input_text == input_text_from_tx
+
+    # Decode the bytes to a string
+    string_from_input_tx = decrypt_string(tx_inputs[1]['_itInputString'], account_hex_encryption_key)
+
+    # assert that value saved in block is as clear after decryption
+    assert string_from_input_tx == user_some_value_clear
 
 
 def get_user_encrypted_from_contract(deployed_contract, eoa):
@@ -271,6 +355,10 @@ def get_user_encrypted_from_contract(deployed_contract, eoa):
 
 def get_user_value_encrypted_input(deployed_contract, eoa):
     return deployed_contract.functions.getUserSomeEncryptedValueEncryptedInput().call({'from': eoa.address})
+
+
+def get_user_string_value_encrypted_input(deployed_contract, eoa):
+    return deployed_contract.functions.getUserSomeEncryptedStringEncryptedInput().call({'from': eoa.address})
 
 
 def get_network_value(deployed_contract, eoa):
@@ -302,6 +390,11 @@ def setNetworkSomeEncryptedValue(deployed_contract, kwargs, tx_params):
 
 def save_network_encrypted_to_user_encrypted_input_in_contract(deployed_contract, kwargs, tx_params):
     func = deployed_contract.functions.setUserSomeEncryptedValueEncryptedInput(**kwargs)
+    return exec_func_via_transaction(func, tx_params)
+
+
+def save_network_encrypted_to_user_encrypted_input_string_in_contract(deployed_contract, kwargs, tx_params):
+    func = deployed_contract.functions.setUserSomeEncryptedStringEncryptedInput(**kwargs)
     return exec_func_via_transaction(func, tx_params)
 
 

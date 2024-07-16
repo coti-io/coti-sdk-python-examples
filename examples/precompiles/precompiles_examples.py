@@ -72,10 +72,10 @@ def test_user_key(function_name, kwargs, expected_result1, get_result_function_n
     decrypted_aes_key = decrypt_rsa(private_key, encrypted_user_key)
     result1, result2, result3, result4 = test(function_name, kwargs, expected_result1, get_result_function_name,
                                               tx_params)
-    assert decrypt_value(result1, decrypted_aes_key) == expected_result1
-    assert decrypt_value(result2, decrypted_aes_key) == expected_result1
-    assert decrypt_value(result3, decrypted_aes_key) == expected_result1
-    assert decrypt_value(result4, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result1, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result2, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result3, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result4, decrypted_aes_key) == expected_result1
 
 
 def test(function_name, kwargs, expected_result1, get_result_function_name, tx_params, expected_result2=None,
