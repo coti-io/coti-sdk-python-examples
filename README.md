@@ -46,6 +46,9 @@ The following contracts are available in each of the packages:
 
 # COTI v2 Python SDK Examples
 
+> [!NOTE]
+> Please refer to the latest [tags](https://github.com/coti-io/coti-sdk-python-examples/tags) to find the most stable version to use. 
+
 The examples project contains scripts covering various use cases, such as Non-Fungible Tokens (NFTs), ERC20 tokens, Auction, and Identity management. It contains smart contracts that implement confidentiality features using the COTI V2 protocol. These contracts demonstrate how to leverage the confidentiality features of the COTI V2 protocol to implement privacy and enhance security in decentralized applications.
 
 The contracts are written in Solidity and can be compiled and deployed using popular development frameworks such as
