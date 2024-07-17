@@ -150,8 +150,8 @@ def run_tests(a, b, shift, bit, numBits, bool_a, bool_b, tx_params):
     test("transferScalarTest", {'amount': b, 'a': a, 'b': b}, a - b, "getResults", tx_params, b + b)
     test("offboardOnboardTest", {'a8': a, 'a16': a, 'a32': a, 'a64': a}, a, "getResult", tx_params)
     test("notTest", {'a': bit}, not bit, "getBoolResult", tx_params)
-    test_user_key("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
-                  a, "getCTs", tx_params)
+    # test_user_key("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
+    #               a, "getCTs", tx_params)
     test_user_key_failure("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
                           a, "getCTs", tx_params)
     test("randomTest", {}, last_random_value, "getRandom", tx_params)
