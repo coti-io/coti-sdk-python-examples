@@ -58,18 +58,30 @@ def test_user_key_failure(function_name, kwargs, expected_result1, get_result_fu
     func.w3.eth.default_account = workaround
 
 
-def test_user_key(function_name, kwargs, expected_result1, get_result_function_name, tx_params, expected_result2=None,
-                  expected_result3=None, expected_result4=None):
+def get_user_key(tx_params):
+    function_name = "userKeyTest"
     private_key, public_key = generate_rsa_keypair()
     # signedEK = sign(public_key, bytes.fromhex("2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622"))
     signedEK = sign(public_key, bytes.fromhex(tx_params['eoa_private_key']))
-    contract = get_contract_implementing_function("userKeyTest")
-    func = getattr(contract.functions, "userKeyTest")
-    workaround = func.w3.eth.default_account
-    func.w3.eth.default_account = func.w3.eth.default_account.address
-    encrypted_user_key = func(*[public_key, signedEK]).call()
-    func.w3.eth.default_account = workaround
+    contract = get_contract_implementing_function(function_name)
+    kwargs = {"signedEK": public_key, "signature": signedEK}
+    func = contract.functions[function_name](**kwargs)
+    tx_receipt = exec_func_via_transaction(func, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
+    encrypted_user_key = tx_receipt.logs[0].data[64:]
     decrypted_aes_key = decrypt_rsa(private_key, encrypted_user_key)
+    return decrypted_aes_key
+
+
+def test_user_key(function_name, kwargs, expected_result1, get_result_function_name, tx_params, expected_result2=None,
+                  expected_result3=None, expected_result4=None):
+    decrypted_aes_key = get_user_key(tx_params)
+    contract = get_contract_implementing_function(function_name)
+    func = contract.functions[function_name](**kwargs)
+    tx_receipt = exec_func_via_transaction(func, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     result1, result2, result3, result4 = test(function_name, kwargs, expected_result1, get_result_function_name,
                                               tx_params)
     assert decrypt_uint(result1, decrypted_aes_key) == expected_result1
@@ -150,8 +162,8 @@ def run_tests(a, b, shift, bit, numBits, bool_a, bool_b, tx_params):
     test("transferScalarTest", {'amount': b, 'a': a, 'b': b}, a - b, "getResults", tx_params, b + b)
     test("offboardOnboardTest", {'a8': a, 'a16': a, 'a32': a, 'a64': a}, a, "getResult", tx_params)
     test("notTest", {'a': bit}, not bit, "getBoolResult", tx_params)
-    # test_user_key("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
-    #               a, "getCTs", tx_params)
+    test_user_key("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
+                  a, "getCTs", tx_params)
     test_user_key_failure("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
                           a, "getCTs", tx_params)
     test("randomTest", {}, last_random_value, "getRandom", tx_params)
