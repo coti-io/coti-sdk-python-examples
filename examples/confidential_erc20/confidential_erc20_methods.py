@@ -1,4 +1,4 @@
-from coti.crypto_utils import build_input_text
+from coti.crypto_utils import build_input_text, decrypt_uint
 
 from examples.basics.utils import *
 
