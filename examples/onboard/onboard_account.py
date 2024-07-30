@@ -84,7 +84,7 @@ def onboard_for_aes_key(deployed_contract, eoa_private_key, tx_params):
     private_key, public_key = generate_rsa_keypair()
     # Sign the public key
     signature = sign(public_key, bytes.fromhex(eoa_private_key))
-    kwargs = {"signedEK": public_key, "signature": signature}
+    kwargs = {"publicKey": public_key, "signature": signature}
     tx_receipt = onboard_user(deployed_contract, kwargs, tx_params)
     print("tx receipt: ", tx_receipt)
     make_sure_tx_didnt_fail(tx_receipt)
@@ -116,7 +116,7 @@ def init():
 
 
 def onboard_user(deployed_contract, kwargs, tx_params):
-    func = deployed_contract.functions.OnboardAccount(**kwargs)
+    func = deployed_contract.functions.onboardAccount(*kwargs.values())
     return exec_func_via_transaction(func, tx_params)
 
 
