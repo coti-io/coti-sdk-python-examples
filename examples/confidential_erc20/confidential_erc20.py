@@ -78,7 +78,7 @@ def test_approve(account_hex_encryption_key, deployed_contract, eoa, tx_params):
     print(tx_receipt)
     make_sure_tx_didnt_fail(tx_receipt)
     allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, eoa.address).call({'from': eoa.address})
-    allowance = decrypt_value(allowance_cipher_text, account_hex_encryption_key)
+    allowance = decrypt_uint(allowance_cipher_text, account_hex_encryption_key)
     assert allowance >= 50
 
 
@@ -117,7 +117,7 @@ def test_approve_clear(account_hex_encryption_key, deployed_contract, eoa, plain
     make_sure_tx_didnt_fail(tx_receipt)
     allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, bob_address.address).call(
         {'from': eoa.address})
-    allowance = decrypt_value(allowance_cipher_text, account_hex_encryption_key)
+    allowance = decrypt_uint(allowance_cipher_text, account_hex_encryption_key)
     assert allowance == allowance_amount
 
 
@@ -126,7 +126,7 @@ def test_transfer_clear_no_allowance(account_balance_before, account_hex_encrypt
     print("************* Transfer clear ", plaintext_integer, " from my account to Alice without allowance **********")
     allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, bob_address.address).call(
         {'from': eoa.address})
-    allowance = decrypt_value(allowance_cipher_text, account_hex_encryption_key) if allowance_cipher_text else None
+    allowance = decrypt_uint(allowance_cipher_text, account_hex_encryption_key) if allowance_cipher_text else None
     amount = allowance if allowance and allowance > 0 else plaintext_integer
     validation_amount = allowance if allowance and allowance > 0 else 0
     kwargs = {'_from': bob_address.address, '_to': alice_address.address, '_itCT': amount, '_itSignature': bytes(65),

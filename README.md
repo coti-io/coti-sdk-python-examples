@@ -1,5 +1,9 @@
 # COTI V2 Confidentiality Preserving L2 | SDKs and Examples
 
+> [!NOTE]
+> Please refer to the latest [tags](https://github.com/coti-io/coti-sdk-python-examples/tags) to find the most stable
+version to use.
+
 All repositories specified below contain smart contracts that implement confidentiality features using the COTI V2 protocol.
 The contracts provide examples for various use cases, such as Non-Fungible Tokens (NFTs), ERC20 tokens, Auction, and Identity management.
 
@@ -45,6 +49,9 @@ The following contracts are available in each of the packages:
 🤖 To request devnet/testnet funds use our [faucet](https://faucet.coti.io)
 
 # COTI v2 Python SDK Examples
+
+> [!NOTE]
+> Please refer to the latest [tags](https://github.com/coti-io/coti-sdk-python-examples/tags) to find the most stable version to use. 
 
 The examples project contains scripts covering various use cases, such as Non-Fungible Tokens (NFTs), ERC20 tokens, Auction, and Identity management. It contains smart contracts that implement confidentiality features using the COTI V2 protocol. These contracts demonstrate how to leverage the confidentiality features of the COTI V2 protocol to implement privacy and enhance security in decentralized applications.
 
@@ -213,8 +220,9 @@ This is a mandatory script for any operation executed in any contract requiring 
 
 1.  Run the `onboard_account.py` script
 
-    <pre class="language-bash"><code class="lang-bash"><strong>python3 examples/onboard/onboard_account.py
-    </strong></code></pre>
+    ```bash
+    python3 examples/onboard/onboard_account.py
+    ```
 
     \
     Running the script will automatically create an account and an `ACCOUNT_ENCRYPTION_KEY` (visible in the `.env` file as well as the output). The script output will look something like this:
@@ -245,10 +253,10 @@ The following process will help you deploy the [**`data_on_chain.py`**](https://
 
 This contract can be used in order to browse and get a feel of the COTI network. The contract allows for the secure handling of encrypted data, enabling storage, transformation, and arithmetic operations on encrypted values using the [**`MpcCore`**](https://github.com/coti-io/confidentiality-contracts/blob/main/contracts/lib/MpcCore.sol) library. It supports operations where values are encrypted using both network and user keys, ensuring data privacy and security on-chain.
 
-1.  Navigate to the `examples` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
+1.  Navigate to the `contracts` directory in the `confidentiality-contracts` directory inside the `coti-sdk-python-examples` project.
 
     ```bash
-    cd confidentiality-contracts/contracts/examples
+    cd confidentiality-contracts/contracts
     ```
 
 

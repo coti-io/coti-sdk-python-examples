@@ -58,24 +58,36 @@ def test_user_key_failure(function_name, kwargs, expected_result1, get_result_fu
     func.w3.eth.default_account = workaround
 
 
-def test_user_key(function_name, kwargs, expected_result1, get_result_function_name, tx_params, expected_result2=None,
-                  expected_result3=None, expected_result4=None):
+def get_user_key(tx_params):
+    function_name = "userKeyTest"
     private_key, public_key = generate_rsa_keypair()
     # signedEK = sign(public_key, bytes.fromhex("2e0834786285daccd064ca17f1654f67b4aef298acbb82cef9ec422fb4975622"))
     signedEK = sign(public_key, bytes.fromhex(tx_params['eoa_private_key']))
-    contract = get_contract_implementing_function("userKeyTest")
-    func = getattr(contract.functions, "userKeyTest")
-    workaround = func.w3.eth.default_account
-    func.w3.eth.default_account = func.w3.eth.default_account.address
-    encrypted_user_key = func(*[public_key, signedEK]).call()
-    func.w3.eth.default_account = workaround
+    contract = get_contract_implementing_function(function_name)
+    kwargs = {"signedEK": public_key, "signature": signedEK}
+    func = contract.functions[function_name](**kwargs)
+    tx_receipt = exec_func_via_transaction(func, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
+    encrypted_user_key = tx_receipt.logs[0].data[64:]
     decrypted_aes_key = decrypt_rsa(private_key, encrypted_user_key)
+    return decrypted_aes_key
+
+
+def test_user_key(function_name, kwargs, expected_result1, get_result_function_name, tx_params, expected_result2=None,
+                  expected_result3=None, expected_result4=None):
+    decrypted_aes_key = get_user_key(tx_params)
+    contract = get_contract_implementing_function(function_name)
+    func = contract.functions[function_name](**kwargs)
+    tx_receipt = exec_func_via_transaction(func, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
     result1, result2, result3, result4 = test(function_name, kwargs, expected_result1, get_result_function_name,
                                               tx_params)
-    assert decrypt_value(result1, decrypted_aes_key) == expected_result1
-    assert decrypt_value(result2, decrypted_aes_key) == expected_result1
-    assert decrypt_value(result3, decrypted_aes_key) == expected_result1
-    assert decrypt_value(result4, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result1, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result2, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result3, decrypted_aes_key) == expected_result1
+    assert decrypt_uint(result4, decrypted_aes_key) == expected_result1
 
 
 def test(function_name, kwargs, expected_result1, get_result_function_name, tx_params, expected_result2=None,

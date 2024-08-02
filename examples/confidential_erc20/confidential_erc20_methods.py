@@ -1,4 +1,4 @@
-from coti.crypto_utils import build_input_text
+from coti.crypto_utils import build_input_text, decrypt_uint
 
 from examples.basics.utils import *
 
@@ -18,7 +18,7 @@ def approve(deployed_contract, kwargs, plaintext_integer, account_hex_encryption
 
 def get_account_balance(account_hex_encryption_key, deployed_contract, eoa):
     cipher_text_balance = deployed_contract.functions.balanceOf().call({'from': eoa.address})
-    account_balance = decrypt_value(cipher_text_balance, account_hex_encryption_key)
+    account_balance = decrypt_uint(cipher_text_balance, account_hex_encryption_key)
     return account_balance
 
 
