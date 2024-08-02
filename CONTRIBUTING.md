@@ -98,5 +98,4 @@ We welcome code contributions! To get started, follow these steps:
 
 ## License
 
-By contributing, you agree that your contributions will be licensed under the [Apache 2.0
-0](LICENSE).
+By contributing, you agree that your contributions will be licensed under the [Apache 2.0 License](LICENSE).
