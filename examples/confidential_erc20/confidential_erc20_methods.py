@@ -5,10 +5,9 @@ from examples.basics.utils import *
 
 def approve(deployed_contract, kwargs, plaintext_integer, account_hex_encryption_key, eoa, tx_params):
     eoa_private_key = tx_params['eoa_private_key']
-    func = deployed_contract.functions.approve(**kwargs)
-    func_sig = get_function_signature(func.abi)
+    func_selector = deployed_contract.functions.approve(**kwargs).selector
     hex_account_private_key = bytes.fromhex(eoa_private_key)
-    ct, signature = build_input_text(plaintext_integer, account_hex_encryption_key, eoa, deployed_contract, func_sig,
+    ct, signature = build_input_text(plaintext_integer, account_hex_encryption_key, eoa, deployed_contract, func_selector,
                                      hex_account_private_key)
     kwargs['_itCT'] = ct
     kwargs['_itSignature'] = signature
@@ -34,10 +33,9 @@ def transfer_from_clear(deployed_contract, kwargs, tx_params):
 
 def transfer_from(deployed_contract, kwargs, eoa, account_hex_encryption_key, plaintext_integer, tx_params):
     account_private_key = eoa.key.hex()[2:]  # tx_params['eoa_private_key']
-    func = deployed_contract.functions.transferFrom(**kwargs)
-    func_sig = get_function_signature(func.abi)
+    func_selector = deployed_contract.functions.transferFrom(**kwargs).selector
     hex_account_private_key = bytes.fromhex(account_private_key)
-    ct, signature = build_input_text(plaintext_integer, account_hex_encryption_key, eoa, deployed_contract, func_sig,
+    ct, signature = build_input_text(plaintext_integer, account_hex_encryption_key, eoa, deployed_contract, func_selector,
                                      hex_account_private_key)
     kwargs['_itCT'] = ct
     kwargs['_itSignature'] = signature
@@ -48,10 +46,9 @@ def transfer_from(deployed_contract, kwargs, eoa, account_hex_encryption_key, pl
 def transfer_encrypted(deployed_contract, kwargs, eoa, account_hex_encryption_key, tx_params):
     eoa_private_key = tx_params['eoa_private_key']
     plaintext_integer = kwargs['_itCT']
-    func = deployed_contract.functions.transfer(**kwargs)
-    func_sig = get_function_signature(func.abi)
+    func_selector = deployed_contract.functions.transfer(**kwargs).selector
     hex_account_private_key = bytes.fromhex(eoa_private_key)
-    ct, signature = build_input_text(plaintext_integer, account_hex_encryption_key, eoa, deployed_contract, func_sig,
+    ct, signature = build_input_text(plaintext_integer, account_hex_encryption_key, eoa, deployed_contract, func_selector,
                                      hex_account_private_key)
     kwargs['_itCT'] = ct
     kwargs['_itSignature'] = signature
