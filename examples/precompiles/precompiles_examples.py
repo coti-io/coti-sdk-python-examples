@@ -69,8 +69,9 @@ def get_user_key(tx_params):
     tx_receipt = exec_func_via_transaction(func, tx_params)
     print(tx_receipt)
     make_sure_tx_didnt_fail(tx_receipt)
-    encrypted_user_key = tx_receipt.logs[0].data[64:]
-    decrypted_aes_key = decrypt_rsa(private_key, encrypted_user_key)
+    result1, result2, result3, result4, result5, result6, result7, result8 \
+        = get_result(contract, "getUserKeyShares")
+    decrypted_aes_key = recover_user_key(private_key, result1, result2)
     return decrypted_aes_key
 
 
@@ -108,7 +109,7 @@ def test(function_name, kwargs, expected_result1, get_result_function_name, tx_p
         return
     if function_name == "offboardToUserTest":
         return result1, result2, result3, result4
-    if get_result_function_name == "getRandom":
+    if get_result_function_name == "getRandom" or get_result_function_name == "getRandomBounded":
         assert result1 != expected_result1
         last_random_value = result1
         return
@@ -137,40 +138,44 @@ def get_result(contract, get_result_function_name):
 
 
 def run_tests(a, b, shift, bit, numBits, bool_a, bool_b, tx_params):
-    test("addTest", {'a': a, 'b': b}, a + b, "getResult", tx_params)
-    test("subTest", {'a': a, 'b': b}, a - b, "getResult", tx_params)
-    test("mulTest", {'a': a, 'b': b}, a * b, "getResult16", tx_params)
-    test("divTest", {'a': a, 'b': b}, a / b, "getResult", tx_params)
-    test("remTest", {'a': a, 'b': b}, a % b, "getResult", tx_params)
-    test("andTest", {'a': a, 'b': b}, a & b, "getResult", tx_params)
-    test("orTest", {'a': a, 'b': b}, a | b, "getResult", tx_params)
-    test("xorTest", {'a': a, 'b': b}, a ^ b, "getResult", tx_params)
-    test("xorTest", {'a': a, 'b': b}, a ^ b, "getResult", tx_params)
-    test("shlTest", {'a': a, 'b': shift}, (a << shift) & 0xFF, "getAllShiftResults",
-         tx_params, (a << shift) & 0xFFFF, (a << shift) & 0xFFFFFFFF, (a << shift) & 0xFFFFFFFFFFFFFFFF)
-    test("shrTest", {'a': a, 'b': shift}, a >> shift, "getResult", tx_params)
-    test("minTest", {'a': a, 'b': b}, min(a, b), "getResult", tx_params)
-    test("maxTest", {'a': a, 'b': b}, max(a, b), "getResult", tx_params)
-    test("eqTest", {'a': a, 'b': b}, a == b, "getResult", tx_params)
-    test("neTest", {'a': a, 'b': b}, a != b, "getResult", tx_params)
-    test("geTest", {'a': a, 'b': b}, a >= b, "getResult", tx_params)
-    test("gtTest", {'a': a, 'b': b}, a > b, "getResult", tx_params)
-    test("leTest", {'a': a, 'b': b}, a <= b, "getResult", tx_params)
-    test("ltTest", {'a': a, 'b': b}, a < b, "getResult", tx_params)
-    test("muxTest", {'selectionBit': bit, 'a': a, 'b': b}, a if bit == 0 else b, "getResult", tx_params)
+    test("addTest", {'a': a, 'b': b}, a + b, "getAddResult", tx_params)
+    test("subTest", {'a': a, 'b': b}, a - b, "getSubResult", tx_params)
+    test("mulTest", {'a': a, 'b': b}, a * b, "getMulResult", tx_params)
+    test("divTest", {'a': a, 'b': b}, a / b, "getDivResult", tx_params)
+    test("remTest", {'a': a, 'b': b}, a % b, "getRemResult", tx_params)
+    test("andTest", {'a': a, 'b': b}, a & b, "getAndResult", tx_params)
+    test("orTest", {'a': a, 'b': b}, a | b, "getOrResult", tx_params)
+    test("xorTest", {'a': a, 'b': b}, a ^ b, "getXorResult", tx_params)
+    test("xorTest", {'a': a, 'b': b}, a ^ b, "getXorResult", tx_params)
+    test("minTest", {'a': a, 'b': b}, min(a, b), "getMinResult", tx_params)
+    test("maxTest", {'a': a, 'b': b}, max(a, b), "getMaxResult", tx_params)
+    test("eqTest", {'a': a, 'b': b}, a == b, "getEqResult", tx_params)
+    test("neTest", {'a': a, 'b': b}, a != b, "getNeResult", tx_params)
+    test("geTest", {'a': a, 'b': b}, a >= b, "getGeResult", tx_params)
+    test("gtTest", {'a': a, 'b': b}, a > b, "getGtResult", tx_params)
+    test("leTest", {'a': a, 'b': b}, a <= b, "getLeResult", tx_params)
+    test("ltTest", {'a': a, 'b': b}, a < b, "getLtResult", tx_params)
+    test("muxTest", {'selectionBit': bit, 'a': a, 'b': b}, a if bit == 0 else b, "getMuxResult", tx_params)
     test("transferTest", {'amount': b, 'a': a, 'b': b}, a - b, "getResults", tx_params, b + b)
     test("transferScalarTest", {'amount': b, 'a': a, 'b': b}, a - b, "getResults", tx_params, b + b)
-    test("offboardOnboardTest", {'a8': a, 'a16': a, 'a32': a, 'a64': a}, a, "getResult", tx_params)
+    test("offboardOnboardTest", {'a8': a, 'a16': a, 'a32': a, 'a64': a}, a, "getOnboardOffboardResult", tx_params)
     test("notTest", {'a': bit}, not bit, "getBoolResult", tx_params)
     test_user_key("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
                   a, "getCTs", tx_params)
     test_user_key_failure("offboardToUserTest", {'a': a, 'addr': tx_params['web3'].eth.default_account.address},
                           a, "getCTs", tx_params)
     test("randomTest", {}, last_random_value, "getRandom", tx_params)
-    test("randomBoundedTest", {'numBits': numBits}, last_random_value, "getRandom", tx_params)
+    test("randomBoundedTest", {'numBits': numBits}, last_random_value, "getRandomBounded", tx_params)
     test("booleanTest", {"a": bool_a, "b": bool_b, "bit": bit}, bool_a and bool_b,
          "getBooleanResults", tx_params, bool_a or bool_b, bool_a ^ bool_b, not bool_a,
          bool_a == bool_b, bool_a != bool_b, bool_b if bit else bool_a, bool_a)
+
+
+
+#     *** Not supported in testnet
+#     test("shlTest", {'a': a, 'b': shift}, (a << shift) & 0xFF, "getAllShiftResults",
+#          tx_params, (a << shift) & 0xFFFF, (a << shift) & 0xFFFFFFFF, (a << shift) & 0xFFFFFFFFFFFFFFFF)
+#     test("shrTest", {'a': a, 'b': shift}, a >> shift, "getResult", tx_params)
 
 
 def main():
