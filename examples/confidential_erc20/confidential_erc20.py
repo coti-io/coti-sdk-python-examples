@@ -1,5 +1,8 @@
 from dotenv import load_dotenv
 
+import importlib.resources
+import json
+
 from confidential_erc20_methods import *
 
 
@@ -17,29 +20,38 @@ def main():
 
     tx_params = {'web3': web3, 'gas_limit': gas_limit, 'gas_price_gwei': gas_price_gwei,
                  'eoa_private_key': eoa_private_key}
-    deployed_contract = deploy(account_hex_encryption_key, eoa, token_initial_balance,
-                               token_name, token_symbol, tx_params)
+    deployed_contract = deploy(web3, eoa, token_name, token_symbol, tx_params)
     view_functions(deployed_contract, eoa)
     testing_functions(deployed_contract, eoa, account_hex_encryption_key, tx_params)
 
 
-def deploy(account_hex_encryption_key, eoa, initial_balance, name, symbol, tx_params):
+def deploy(web3: Web3, eoa: Account, name, symbol, tx_params):
     kwargs = {
         'name_': name,
-        'symbol_': symbol,
-        'initialSupply': initial_balance
+        'symbol_': symbol
     }
-    contract_name = "ERC20Example"
-    contract_file_name = "ERC20Example.sol"
-    contract_directory = "examples/"
-    relative_to_mpc_core = "../lib/MpcCore.sol"
-    deployed_contract, was_already_deployed = \
-        get_deployed_contract(contract_name, contract_file_name, contract_directory, tx_params, kwargs,
-                              relative_to_mpc_core)
+    resource = importlib.resources.files('artifacts') / 'contracts' / 'PrivateToken.sol' / 'PrivateToken.json'
+
+    with open(resource, 'r') as file:
+        data = json.load(file)
+    
+    PrivateToken = web3.eth.contract(abi=data['abi'], bytecode=data['bytecode'])
+
+    tx = PrivateToken.constructor(**kwargs).build_transaction({
+        'from': eoa.address,
+        'nonce': web3.eth.get_transaction_count(eoa.address)
+    })
+
+    signed_tx = web3.eth.account.sign_transaction(tx, eoa._private_key)
+
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+    deployed_contract = web3.eth.contract(address=tx_receipt.contractAddress, abi=data['abi'])
+
     print('contract address: ', deployed_contract.address)
-    if not was_already_deployed:
-        account_balance = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
-        assert account_balance == initial_balance
+
     return deployed_contract
 
 
@@ -58,18 +70,20 @@ def testing_functions(deployed_contract, eoa, account_hex_encryption_key, tx_par
     alice_address = Account.create()
     plaintext_integer = 5
 
+    test_mint(deployed_contract, eoa, tx_params)
     account_balance_at_first = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
-    account_balance_before = test_transfer(account_balance_at_first, account_hex_encryption_key, alice_address,
-                                           deployed_contract, eoa, plaintext_integer, tx_params)
-
-    account_balance_before = test_transfer_clear(account_balance_before, account_hex_encryption_key, alice_address,
-                                                 deployed_contract, eoa, plaintext_integer, tx_params)
-
-    account_balance_at_end = test_transfer_input_text(account_balance_before, account_hex_encryption_key, alice_address,
+    account_balance_at_end = test_transfer_input_text(account_balance_at_first, account_hex_encryption_key, alice_address,
                                                       deployed_contract, eoa, plaintext_integer, tx_params)
 
     print('account balance at first: ', account_balance_at_first, ' account balance at end:', account_balance_at_end)
 
+
+def test_mint(deployed_contract, eoa: Account, tx_params):
+    print("************* Minting 500000000 to my address *************")
+    kwargs = {'account': eoa.address, 'amount': 500000000}
+    tx_receipt = mint(deployed_contract, kwargs, tx_params)
+    print(tx_receipt)
+    make_sure_tx_didnt_fail(tx_receipt)
 
 def test_approve(account_hex_encryption_key, deployed_contract, eoa, tx_params):
     print("************* Approve InputText 50 to my address *************")
@@ -80,18 +94,6 @@ def test_approve(account_hex_encryption_key, deployed_contract, eoa, tx_params):
     allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, eoa.address).call({'from': eoa.address})
     allowance = decrypt_uint(allowance_cipher_text, account_hex_encryption_key)
     assert allowance >= 50
-
-
-def test_transfer_from_clear(account_balance_before, account_hex_encryption_key, alice_address, deployed_contract, eoa,
-                             plaintext_integer, tx_params):
-    print("************* Transfer clear ", plaintext_integer, " from my account to Alice *************")
-    kwargs = {'_from': eoa.address, '_to': alice_address.address, '_value': plaintext_integer}
-    tx_receipt = transfer_from_clear(deployed_contract, kwargs, tx_params)
-    print(tx_receipt)
-    make_sure_tx_didnt_fail(tx_receipt)
-    account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
-    assert account_balance_before - plaintext_integer == account_balance_after
-    return account_balance_after
 
 
 def test_transfer_from(account_balance_before, account_hex_encryption_key, alice_address, deployed_contract, eoa,
@@ -108,7 +110,7 @@ def test_transfer_from(account_balance_before, account_hex_encryption_key, alice
     return account_balance_after
 
 
-def test_approve_clear(account_hex_encryption_key, deployed_contract, eoa, plaintext_integer, tx_params, bob_address):
+def test_approve(account_hex_encryption_key, deployed_contract, eoa, plaintext_integer, tx_params, bob_address):
     print("************* Approve ", plaintext_integer * 10, " to my address *************")
     allowance_amount = plaintext_integer * 10
     kwargs = {'_spender': bob_address.address, '_value': allowance_amount}
@@ -121,53 +123,11 @@ def test_approve_clear(account_hex_encryption_key, deployed_contract, eoa, plain
     assert allowance == allowance_amount
 
 
-def test_transfer_clear_no_allowance(account_balance_before, account_hex_encryption_key, alice_address,
-                                     deployed_contract, eoa, plaintext_integer, tx_params, bob_address):
-    print("************* Transfer clear ", plaintext_integer, " from my account to Alice without allowance **********")
-    allowance_cipher_text = deployed_contract.functions.allowance(eoa.address, bob_address.address).call(
-        {'from': eoa.address})
-    allowance = decrypt_uint(allowance_cipher_text, account_hex_encryption_key) if allowance_cipher_text else None
-    amount = allowance if allowance and allowance > 0 else plaintext_integer
-    validation_amount = allowance if allowance and allowance > 0 else 0
-    kwargs = {'_from': bob_address.address, '_to': alice_address.address, '_itCT': amount, '_itSignature': bytes(65),
-              'revealRes': False}
-    tx_receipt = transfer_from(deployed_contract, kwargs, eoa, account_hex_encryption_key, amount, tx_params)
-    print(tx_receipt)
-    account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
-    assert account_balance_before - validation_amount == account_balance_after
-    account_balance_before = account_balance_before - validation_amount if allowance and allowance > 0 else account_balance_before
-    return account_balance_before
-
-
 def test_transfer_input_text(account_balance_before, account_hex_encryption_key, alice_address, deployed_contract, eoa,
                              plaintext_integer, tx_params):
     print("************* Transfer IT ", plaintext_integer, " to Alice *************")
-    kwargs = {'_to': alice_address.address, '_itCT': 5, '_itSignature': bytes(65), 'revealRes': False}
+    kwargs = {'to': alice_address.address, 'value': (5, bytes(65))}
     tx_receipt = transfer_encrypted(deployed_contract, kwargs, eoa, account_hex_encryption_key, tx_params)
-    print(tx_receipt)
-    make_sure_tx_didnt_fail(tx_receipt)
-    account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
-    assert account_balance_before - plaintext_integer == account_balance_after
-    return account_balance_after
-
-
-def test_transfer_clear(account_balance_before, account_hex_encryption_key, alice_address, deployed_contract, eoa,
-                        plaintext_integer, tx_params):
-    print("************* Transfer again, clear ", plaintext_integer, " to Alice *************")
-    kwargs = {'_to': alice_address.address, '_value': plaintext_integer}
-    tx_receipt = transfer_clear(deployed_contract, kwargs, tx_params)
-    print(tx_receipt)
-    make_sure_tx_didnt_fail(tx_receipt)
-    account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
-    assert account_balance_before - plaintext_integer == account_balance_after
-    return account_balance_after
-
-
-def test_transfer(account_balance_before, account_hex_encryption_key, alice_address, deployed_contract, eoa,
-                  plaintext_integer, tx_params):
-    print("************* Transfer clear ", plaintext_integer, " to Alice *************")
-    kwargs = {'_to': alice_address.address, '_value': plaintext_integer, 'revealRes': True}
-    tx_receipt = transfer(deployed_contract, kwargs, tx_params)
     print(tx_receipt)
     make_sure_tx_didnt_fail(tx_receipt)
     account_balance_after = get_account_balance(account_hex_encryption_key, deployed_contract, eoa)
@@ -183,8 +143,6 @@ def view_functions(deployed_contract, eoa):
     print("Function call result symbol:", symbol)
     decimals = deployed_contract.functions.decimals().call({'from': eoa.address})
     print("Function call result decimals:", decimals)
-    total_supply = deployed_contract.functions.totalSupply().call({'from': eoa.address})
-    print("Function call result totalSupply:", total_supply)
 
 
 if __name__ == "__main__":
