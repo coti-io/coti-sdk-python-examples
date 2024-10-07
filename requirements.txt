@@ -40,5 +40,5 @@ websockets==12.0
 yarl==1.9.2
 cryptography==3.4.8
 python-dotenv==1.0.1
-coti_sdk==1.0.0
+coti_sdk==1.0.2
 

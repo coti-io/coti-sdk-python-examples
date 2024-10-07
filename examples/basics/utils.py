@@ -69,7 +69,7 @@ def validate_minimum_balance(web3):
             raise Exception(
                 "Not enough balance!, head to discord faucet and get some..." \
                 "https://faucet.coti.io, ask the BOT:" \
-                "devnet " + str(web3.eth.default_account.address))
+                "testnet " + str(web3.eth.default_account.address))
         raise Exception("Not enough balance!")
 
 
