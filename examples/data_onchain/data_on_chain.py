@@ -34,7 +34,7 @@ def main():
 def make_sure_data_is_safe(eoa, web3, deployed_contract, tx_params):
     some_other_contract_keeping_data = {
         "contract_name": "DataOnChain",
-        "address": "0xF51735c2be37e0a4f60487b52F8417CdB4960cA6",
+        "address": "0xbC39Df62e41F69300a413d4F3a262737A1109FC3",
         "abi": [
             {
             "inputs": [],
@@ -325,9 +325,9 @@ def create_another_account(eoa_private_key, gas_limit, gas_price_gwei, web3):
     print(tx_receipt)
     alice_private_key = alice_eoa._private_key.hex()[2:]
     alice_web3 = init_web3(get_node_https_address(), alice_eoa)
-    onboard_deployed_contract = get_contract(alice_web3, devnet_onboard_contract['abi'],
-                                             devnet_onboard_contract['bytecode'],
-                                             devnet_onboard_contract['address'])
+    onboard_deployed_contract = get_contract(alice_web3, testnet_onboard_contract['abi'],
+                                             testnet_onboard_contract['bytecode'],
+                                             testnet_onboard_contract['address'])
     alice_tx_params = {'web3': alice_web3, 'gas_limit': gas_limit, 'gas_price_gwei': gas_price_gwei,
                        'eoa_private_key': alice_private_key}
     alice_decrypted_aes_key = onboard_for_aes_key(onboard_deployed_contract, alice_private_key, alice_tx_params)
