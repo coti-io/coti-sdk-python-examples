@@ -470,10 +470,10 @@ def save_input_text_network_encrypted_in_contract(deployed_contract, account_hex
     func_selector = deployed_contract.functions.setSomeEncryptedValueEncryptedInput(**kwargs).selector
     eoa_private_key = tx_params['eoa_private_key']
     hex_account_private_key = bytes.fromhex(eoa_private_key)
-    input_text, signature = build_input_text(clear_input, account_hex_encryption_key, eoa, deployed_contract, func_selector,
+    input_text = build_input_text(clear_input, account_hex_encryption_key, eoa, deployed_contract, func_selector,
                                              hex_account_private_key)
-    kwargs['_itCT'] = input_text
-    kwargs['_itSignature'] = signature
+    kwargs['_itCT'] = input_text['ciphertext']
+    kwargs['_itSignature'] = input_text['signature']
     func = deployed_contract.functions.setSomeEncryptedValueEncryptedInput(**kwargs)
     return exec_func_via_transaction(func, tx_params), clear_input, input_text
 
@@ -534,7 +534,7 @@ def validate_block_has_tx_input_encrypted_value(tx_params, tx_receipt, user_some
     print(tx_from_block)
     input_text_from_tx = tx_from_block['input'].hex()[10:74]
     # assert that value encrypted locally was saved in block
-    assert input_text == int(input_text_from_tx, 16)
+    assert input_text['ciphertext'] == int(input_text_from_tx, 16)
     # assert that value saved in block is not clear
     assert str(input_text_from_tx) != str(user_some_value_clear)
     decrypted_input_from_tx = decrypt_uint(int(input_text_from_tx, 16), account_hex_encryption_key)
