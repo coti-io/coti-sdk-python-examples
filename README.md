@@ -17,8 +17,8 @@ The contracts are of Solidity and can be compiled and deployed using popular dev
 Interact with the network using any of the following:
 
 1. [Python SDK](https://github.com/coti-io/coti-sdk-python) | [Python SDK Examples](https://github.com/coti-io/coti-sdk-python-examples)
-2. [Typescript SDK](https://github.com/coti-io/coti-sdk-typescript) | [Typescript SDK Examples](https://github.com/coti-io/coti-sdk-typescript-examples)
-3. [Hardhat Dev Environment](https://github.com/coti-io/confidentiality-contracts)
+2. [Typescript SDK](https://github.com/coti-io/coti-sdk-typescript) | [Typescript Examples](https://github.com/coti-io/coti-typescript-examples)
+3. [COTI Contracts](https://github.com/coti-io/coti-contracts) | [COTI Contracts Examples](https://github.com/coti-io/coti-contracts-examples)
 
 The following contracts are available in each of the packages:
 
