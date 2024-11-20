@@ -1,3 +1,7 @@
+import importlib.resources
+import json
+
+from eth_abi.abi import decode
 from examples.onboard.onboard_account import *
 from math import ceil
 
@@ -10,7 +14,7 @@ def main():
 
     tx_params = {'web3': web3, 'gas_limit': gas_limit, 'gas_price_gwei': gas_price_gwei,
                  'eoa_private_key': eoa_private_key}
-    deployed_contract = deploy(account_hex_encryption_key, eoa, tx_params)
+    deployed_contract = deploy(web3, eoa, tx_params)
 
     basic_get_value(deployed_contract, eoa, web3)
     a = basic_clear_encrypt_decrypt(account_hex_encryption_key, deployed_contract, eoa, tx_params)
@@ -466,14 +470,13 @@ def network_decryption_failure(account_hex_encryption_key, deployed_contract, eo
 def save_input_text_network_encrypted_in_contract(deployed_contract, account_hex_encryption_key, eoa,
                                                   hex_account_private_key, tx_params):
     clear_input = 8
-    kwargs = {'_itCT': clear_input, '_itSignature': bytes(65)}
+    kwargs = { 'itValue': (clear_input, bytes(65)) }
     func_selector = deployed_contract.functions.setSomeEncryptedValueEncryptedInput(**kwargs).selector
     eoa_private_key = tx_params['eoa_private_key']
     hex_account_private_key = bytes.fromhex(eoa_private_key)
     input_text = build_input_text(clear_input, account_hex_encryption_key, eoa, deployed_contract, func_selector,
                                              hex_account_private_key)
-    kwargs['_itCT'] = input_text['ciphertext']
-    kwargs['_itSignature'] = input_text['signature']
+    kwargs['itValue'] = input_text
     func = deployed_contract.functions.setSomeEncryptedValueEncryptedInput(**kwargs)
     return exec_func_via_transaction(func, tx_params), clear_input, input_text
 
@@ -485,12 +488,7 @@ def save_string_input_text_network_encrypted_in_contract(deployed_contract, acco
     _itCiphertext = [123 for _ in range(ceil(len(encoded_clear_input) / 8))]
     _itSignature = [bytes(65) for _ in range(ceil(len(encoded_clear_input) / 8))]
     kwargs = {
-        '_itInputString': {
-            'ciphertext': {
-                'value': _itCiphertext
-            },
-            'signature': _itSignature
-        }
+        'itValue': ((_itCiphertext,), _itSignature)
     }
     func_selector = deployed_contract.functions.setSomeEncryptedStringEncryptedInput(**kwargs).selector
     eoa_private_key = tx_params['eoa_private_key']
@@ -498,7 +496,7 @@ def save_string_input_text_network_encrypted_in_contract(deployed_contract, acco
     input_text = build_string_input_text(clear_input, account_hex_encryption_key, eoa, deployed_contract, func_selector,
                                          hex_account_private_key)
 
-    kwargs['_itInputString'] = input_text
+    kwargs['itValue'] = input_text
     func = deployed_contract.functions.setSomeEncryptedStringEncryptedInput(**kwargs)
     return exec_func_via_transaction(func, tx_params), clear_input, input_text
 
@@ -532,12 +530,14 @@ def validate_block_has_tx_input_encrypted_value(tx_params, tx_receipt, user_some
     tx_from_block = tx_params['web3'].eth.get_transaction_by_block(tx_receipt['blockHash'],
                                                                    tx_receipt['transactionIndex'])
     print(tx_from_block)
-    input_text_from_tx = tx_from_block['input'].hex()[10:74]
+
+    input_text_from_tx = decode(['(uint256,bytes)'], bytes.fromhex(tx_from_block['input'].hex()[10:]))[0][0]
+
     # assert that value encrypted locally was saved in block
-    assert input_text['ciphertext'] == int(input_text_from_tx, 16)
+    assert input_text['ciphertext'] == input_text_from_tx
     # assert that value saved in block is not clear
     assert str(input_text_from_tx) != str(user_some_value_clear)
-    decrypted_input_from_tx = decrypt_uint(int(input_text_from_tx, 16), account_hex_encryption_key)
+    decrypted_input_from_tx = decrypt_uint(int(input_text_from_tx), account_hex_encryption_key)
     # assert that value saved in block is as clear after decryption
     assert int(decrypted_input_from_tx) == user_some_value_clear
 
@@ -549,12 +549,12 @@ def validate_block_has_tx_string_input_encrypted_value(tx_params, tx_receipt, us
     print(tx_from_block)
     tx_inputs = contract.decode_function_input(tx_from_block['input'].hex())
     ciphertexts = input_text['ciphertext']['value']
-    for input_text_from_tx, input_text in zip(tx_inputs[1]['_itInputString']['ciphertext']['value'], ciphertexts):
+    for input_text_from_tx, input_text in zip(tx_inputs[1]['itValue']['ciphertext']['value'], ciphertexts):
         # assert that value encrypted locally was saved in block
         assert input_text == input_text_from_tx
 
     # Decode the bytes to a string
-    string_from_input_tx = decrypt_string(tx_inputs[1]['_itInputString']['ciphertext'], account_hex_encryption_key)
+    string_from_input_tx = decrypt_string(tx_inputs[1]['itValue']['ciphertext'], account_hex_encryption_key)
 
     # assert that value saved in block is as clear after decryption
     assert string_from_input_tx == user_some_value_clear
@@ -634,15 +634,29 @@ def init():
     return account_hex_encryption_key, eoa, eoa_private_key, web3
 
 
-def deploy(account_hex_encryption_key, eoa, tx_params):
+def deploy(web3: Web3, eoa: Account, tx_params):
     kwargs = {}
-    contract_name = "DataOnChain"
-    contract_file_name = contract_name + ".sol"
-    relative_to_contracts_directory = "examples/"
-    relative_to_mpc_core = "../lib/MpcCore.sol"
-    deployed_contract, was_already_deployed = \
-        get_deployed_contract(contract_name, contract_file_name, relative_to_contracts_directory, tx_params, kwargs,
-                              relative_to_mpc_core)
+
+    resource = importlib.resources.files('artifacts') / 'contracts' / 'DataOnChain.sol' / 'DataOnChain.json'
+
+    with open(resource, 'r') as file:
+        data = json.load(file)
+    
+    DataOnChain = web3.eth.contract(abi=data['abi'], bytecode=data['bytecode'])
+
+    tx = DataOnChain.constructor().build_transaction({
+        'from': eoa.address,
+        'nonce': web3.eth.get_transaction_count(eoa.address)
+    })
+
+    signed_tx = web3.eth.account.sign_transaction(tx, eoa._private_key)
+
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+    deployed_contract = web3.eth.contract(address=tx_receipt.contractAddress, abi=data['abi'])
+
     print('contract address: ', deployed_contract.address)
 
     return deployed_contract
