@@ -1,3 +1,6 @@
+> [!WARNING]
+> This repository has been deprecated and moved to [coti-python-examples](https://github.com/coti-io/coti-python-examples)
+
 # COTI V2 Confidentiality Preserving L2 | SDKs and Examples
 
 > [!NOTE]
